@@ -1,131 +1,108 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 function App() {
-  const [ingredients, setIngredients] = useState('');
-  const [style, setStyle] = useState('classique');
+  const [ingredients, setIngredients] = useState("");
+  const [style, setStyle] = useState("");
   const [recipe, setRecipe] = useState(null);
-  const [allRecipes, setAllRecipes] = useState([]);
+  const [recipes, setRecipes] = useState([]);
 
-  // Charger toutes les recettes à l'initialisation
-  useEffect(() => {
-    fetch("http://localhost:8000/recipes")
-      .then((res) => res.json())
-      .then((data) => setAllRecipes(data))
-      .catch((err) => console.error("Erreur lors du chargement :", err));
-  }, []);
-
-  // Générer une nouvelle recette
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await fetch("http://localhost:8000/generate-recipe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ingredients,
-          style,
-        }),
-      });
-
-      const data = await response.json();
-      setRecipe(data);
-      setAllRecipes((prev) => [...prev, data]);
-    } catch (error) {
-      console.error("Erreur de génération :", error);
-    }
+  const fetchRecipes = async () => {
+    const res = await fetch("http://localhost:8000/recipes");
+    const data = await res.json();
+    setRecipes(data);
   };
 
-  // Supprimer une recette
-  const handleDelete = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:8000/recipes/${id}`, {
-        method: 'DELETE',
-      });
+  useEffect(() => {
+    fetchRecipes();
+  }, []);
 
-      if (response.ok) {
-        setAllRecipes((prev) => prev.filter((r) => r.id !== id));
-      } else {
-        console.error("Erreur lors de la suppression");
-      }
-    } catch (error) {
-      console.error("Erreur réseau :", error);
-    }
+  const handleGenerate = async () => {
+    const res = await fetch("http://localhost:8000/generate-recipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ingredients, style }),
+    });
+
+    const data = await res.json();
+    setRecipe(data);
+    fetchRecipes();
+  };
+
+  const handleDelete = async (id) => {
+    await fetch(`http://localhost:8000/recipes/${id}`, {
+      method: "DELETE",
+    });
+    fetchRecipes();
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
-      <h1>🍝 Cookpilot</h1>
-      <p>Entre tes ingrédients et choisis un style de cuisine :</p>
+    <div className="min-h-screen bg-light px-4 py-8">
+      <div className="flex items-center justify-center space-x-4 mb-8">
+  <img src="/logo.png" alt="logo" className="w-12 h-12" />
+  <h1 className="text-3xl font-bold text-dark">Cookpilot</h1>
+</div>
 
-      {/* Formulaire */}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Ex : pâtes, ail, tomates"
-          value={ingredients}
-          onChange={(e) => setIngredients(e.target.value)}
-          style={{ width: '300px', padding: '0.5rem' }}
-        />
+      <div className="max-w-xl mx-auto bg-white shadow-lg rounded-xl p-6 mb-8 space-y-4">
+        <label className="block">
+          <span className="text-gray-700 font-semibold">Ingrédients :</span>
+          <input
+            type="text"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+            placeholder="pâtes, tomates, ail..."
+            value={ingredients}
+            onChange={(e) => setIngredients(e.target.value)}
+          />
+        </label>
 
-        <select
-          value={style}
-          onChange={(e) => setStyle(e.target.value)}
-          style={{ marginLeft: '1rem', padding: '0.5rem' }}
-        >
-          <option value="classique">Classique</option>
-          <option value="italien">Italien</option>
-          <option value="rapide">Rapide</option>
-          <option value="healthy">Healthy</option>
-          <option value="vegan">Vegan</option>
-          <option value="gourmand">Gourmand</option>
-        </select>
+        <label className="block">
+          <span className="text-gray-700 font-semibold">Style de cuisine (optionnel) :</span>
+          <select
+            value={style}
+            onChange={(e) => setStyle(e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+          >
+            <option value="">-- Choisir un style --</option>
+            <option value="italienne">Italienne</option>
+            <option value="healthy">Healthy</option>
+            <option value="rapide">Rapide</option>
+            <option value="traditionnelle">Traditionnelle</option>
+          </select>
+        </label>
 
         <button
-          type="submit"
-          style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}
+          onClick={handleGenerate}
+          className="w-full bg-primary text-white font-semibold py-2 px-4 rounded-md hover:bg-emerald-600"
         >
-          Générer
+          Générer une recette
         </button>
-      </form>
+      </div>
 
-      {/* Affichage de la recette générée */}
       {recipe && (
-        <div style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #ccc' }}>
-          <h2>{recipe.generated_name}</h2>
+        <div className="max-w-xl mx-auto bg-white shadow-md rounded-xl p-6 mb-8 border border-primary">
+          <h2 className="text-xl font-bold text-primary mb-2">{recipe.generated_name}</h2>
           <p><strong>Ingrédients :</strong> {recipe.ingredients}</p>
-          <p><strong>Style :</strong> {recipe.style}</p>
-          <p><strong>Préparation :</strong></p>
-          <pre style={{ whiteSpace: 'pre-wrap' }}>{recipe.steps}</pre>
+          <p className="mt-2 whitespace-pre-line"><strong>Étapes :</strong> {recipe.steps}</p>
         </div>
       )}
 
-      {/* Historique */}
-      <div style={{ marginTop: '3rem' }}>
-        <h2>📜 Historique des recettes</h2>
-        <ul>
-          {allRecipes.map((r) => (
-            <li key={r.id} style={{ marginBottom: '0.5rem' }}>
-              <strong>{r.generated_name}</strong> — {r.ingredients}
+      <div className="max-w-3xl mx-auto">
+        <h3 className="text-xl font-bold text-dark mb-4">📜 Historique des recettes :</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {recipes.map((r) => (
+            <div key={r.id} className="bg-white shadow rounded-lg p-4 border border-gray-200 relative">
+              <h4 className="text-lg font-semibold text-primary mb-1">{r.generated_name}</h4>
+              <p className="text-sm text-gray-500 mb-1"><strong>Style :</strong> {r.style || "—"}</p>
+              <p className="text-sm text-gray-600 mb-2"><strong>Ingrédients :</strong> {r.ingredients}</p>
+              <p className="text-sm text-gray-700 whitespace-pre-line">{r.steps}</p>
               <button
                 onClick={() => handleDelete(r.id)}
-                style={{
-                  marginLeft: '1rem',
-                  backgroundColor: '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
               >
-                🗑️ Supprimer
+                ✖
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );

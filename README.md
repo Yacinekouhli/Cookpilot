@@ -1,49 +1,35 @@
-# 🧑‍🍳 Cookpilot
+# 👨‍🍳 Cookpilot
 
-**Ton assistant IA de cuisine** : entre les ingrédients que tu as dans ton frigo, et Cookpilot te génère une recette complète, claire et appétissante 🍝
+**Cookpilot** est une application web full-stack qui permet de générer des recettes de cuisine en fonction des ingrédients que tu as chez toi.  
+Le tout propulsé par une intelligence artificielle ✨
 
 ---
 
 ## 🚀 Fonctionnalités
 
-- 🔍 Génère une recette à partir d'ingrédients
+- 🔍 Génération de recette à partir d’ingrédients saisis
+- 🎨 Choix du style culinaire (gourmand, healthy, rapide…)
 - 📜 Historique des recettes générées
-- 🧹 Suppression de recettes
-- 🧠 Possibilité de choisir un style de cuisine (à venir)
-- 🤖 Génération par OpenAI (à venir)
+- 🗑️ Suppression de recettes
+- 🧠 Intégration future d’OpenAI pour créer de vraies recettes IA
+- 🌈 Interface responsive et stylée avec Tailwind CSS
 
 ---
 
-## 🛠️ Stack technique
+## 🧱 Stack technique
 
-### Backend
+### Backend (📦 FastAPI)
+- Python 3.11
+- FastAPI
+- SQLAlchemy + SQLite
+- OpenAI (mocké pour l'instant)
+- Pydantic
 
-- **Python 3.11**
-- **FastAPI**
-- **SQLAlchemy**
-- **SQLite**
-- **Pydantic**
-- **Poetry** pour la gestion d’environnement
-
-### Frontend (à venir)
-
-- **React + Vite** (ou Create React App)
-- **TailwindCSS** pour le style
+### Frontend (🖼 React)
+- React (via Create React App)
+- Tailwind CSS
 
 ---
 
-## 📦 Installation backend (FastAPI)
+## 📂 Structure du projet
 
-```bash
-# Cloner le repo
-git clone git@github.com:Yacinekouhli/Cookpilot.git
-cd Cookpilot
-
-# Installer les dépendances Python
-poetry install
-
-# Lancer le shell virtuel
-poetry shell
-
-# Lancer le serveur
-uvicorn app.main:app --reload
