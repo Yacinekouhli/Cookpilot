@@ -5,8 +5,23 @@ from app.schemas import RecipeRequest, RecipeResponse, RecipeOut
 from app.openai_client import generate_fake_recipe
 from app.database import SessionLocal
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Autorise le frontend React en dev
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,        # en dev tu peux mettre ["*"] si tu veux aller vite
+    allow_credentials=True,
+    allow_methods=["*"],          # GET, POST, DELETE, OPTIONS, ...
+    allow_headers=["*"],          # Content-Type, Authorization, ...
+)
 
 
 def get_db():
@@ -17,7 +32,7 @@ def get_db():
         db.close()
 
 
-@app.post("/generate-recipe", response_model=RecipeResponse)
+@app.post("/generate-recipe", response_model=RecipeOut)
 def generate_recipe(request: RecipeRequest, db: Session = Depends(get_db)):
     response = generate_fake_recipe(request)
 
@@ -32,11 +47,7 @@ def generate_recipe(request: RecipeRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(recipe)
 
-    return RecipeResponse(
-        generated_name=recipe.generated_name,
-        ingredients=recipe.ingredients,
-        steps=recipe.steps
-    )
+    return recipe
 
 
 @app.get("/recipes", response_model=List[RecipeOut])

@@ -22,5 +22,4 @@ class RecipeOut(BaseModel):  # utilisé dans GET
     style: Optional[str]
     timestamp: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
