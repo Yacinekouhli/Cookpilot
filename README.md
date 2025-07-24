@@ -1,4 +1,4 @@
-# ChefGPT 🍝
+# CookPilot 🍝
 
 Génère des recettes de cuisine à partir de ce que tu as chez toi.
 
