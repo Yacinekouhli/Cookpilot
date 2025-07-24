@@ -1,0 +1,11 @@
+# Fichiers à ignorer
+__pycache__/
+*.pyc
+.env
+recipes.db
+*.sqlite3
+*.log
+.idea/
+.vscode/
+.cache/
+poetry.lock
