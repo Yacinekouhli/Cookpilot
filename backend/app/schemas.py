@@ -28,3 +28,11 @@ class RecipeOut(BaseModel):  # utilisé dans GET
 class UserCreate(BaseModel):
     email: str
     password: str
+
+
+class SignupResponse(BaseModel):
+    message: str
+
+
+class VerifyEmailResponse(BaseModel):
+    message: str

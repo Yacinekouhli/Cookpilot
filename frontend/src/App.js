@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
+import VerifyEmail from "./VerifyEmail";
 
 function App() {
   const [ingredients, setIngredients] = useState("");
@@ -9,7 +10,9 @@ function App() {
   const [recipes, setRecipes] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [showLogin, setShowLogin] = useState(true);
-  const [loading, setLoading] = useState(false); // chargement
+  const [loading, setLoading] = useState(false);
+  const [verifyingEmail, setVerifyingEmail] = useState(false);
+  const [verificationDone, setVerificationDone] = useState(false);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -39,6 +42,15 @@ function App() {
   useEffect(() => {
     if (isLoggedIn) fetchRecipes();
   }, [isLoggedIn]);
+
+  // Vérifie si token de vérification email est dans l’URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+    if (token && !verificationDone) {
+      setVerifyingEmail(true);
+    }
+  }, [verificationDone]);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -71,6 +83,16 @@ function App() {
     fetchRecipes();
   };
 
+  // 🔁 Composant temporaire si on est en train de valider l’email
+  if (verifyingEmail && !verificationDone) {
+    return <VerifyEmail onDone={() => {
+      setVerifyingEmail(false);
+      setVerificationDone(true);
+      setShowLogin(true);
+    }} />;
+  }
+
+  // 🔒 Si pas connecté, on affiche le login/signup
   if (!isLoggedIn) {
     return showLogin ? (
       <Login onLogin={handleLogin} switchToSignup={() => setShowLogin(false)} />

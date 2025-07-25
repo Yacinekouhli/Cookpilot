@@ -89,20 +89,3 @@ def delete_recipe(
     db.commit()
 
     return {"message": f"Recette avec l'ID {recipe_id} supprimée avec succès."}
-
-
-@app.post("/auth/signup")
-def signup(user: UserCreate, db: Session = Depends(get_db)):
-    # Vérifie si l'utilisateur existe déjà
-    existing_user = db.query(User).filter(User.email == user.email).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email déjà utilisé")
-
-    # Hash le mot de passe et crée le user
-    hashed_pwd = hash_password(user.password)
-    new_user = User(email=user.email, hashed_password=hashed_pwd)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return {"message": "Utilisateur créé avec succès", "user_id": new_user.id}
