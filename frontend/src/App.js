@@ -9,20 +9,21 @@ function App() {
   const [recipes, setRecipes] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [showLogin, setShowLogin] = useState(true);
+  const [loading, setLoading] = useState(false); // chargement
 
   const handleLogin = () => {
     setIsLoggedIn(true);
-    setIngredients("");  // Vide les champs à la connexion
+    setIngredients("");
     setStyle("");
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    setIngredients("");  // Vide les champs à la déconnexion
+    setIngredients("");
     setStyle("");
-    setRecipe(null);     // Vide la recette affichée
-    setRecipes([]);      // Vide l'historique
+    setRecipe(null);
+    setRecipes([]);
   };
 
   const fetchRecipes = async () => {
@@ -40,18 +41,24 @@ function App() {
   }, [isLoggedIn]);
 
   const handleGenerate = async () => {
-    const res = await fetch("http://localhost:8000/generate-recipe", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({ ingredients, style }),
-    });
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:8000/generate-recipe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ ingredients, style }),
+      });
 
-    const data = await res.json();
-    setRecipe(data);
-    fetchRecipes();
+      const data = await res.json();
+      setRecipe(data);
+      fetchRecipes();
+    } catch (error) {
+      console.error("Erreur lors de la génération :", error);
+    }
+    setLoading(false);
   };
 
   const handleDelete = async (id) => {
@@ -118,6 +125,12 @@ function App() {
           Générer une recette
         </button>
       </div>
+
+      {loading && (
+        <div className="text-center text-gray-600 mb-6">
+          ⏳ Génération de la recette en cours...
+        </div>
+      )}
 
       {recipe && (
         <div className="max-w-xl mx-auto bg-white shadow-md rounded-xl p-6 mb-8 border border-primary">

@@ -1,4 +1,7 @@
 # Fichiers à ignorer
+# Fichiers de config sensibles
+.env
+
 __pycache__/
 *.pyc
 .env
