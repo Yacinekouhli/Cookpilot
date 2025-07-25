@@ -23,3 +23,8 @@ class RecipeOut(BaseModel):  # utilisé dans GET
     timestamp: datetime
 
     model_config = {"from_attributes": True}
+
+
+class UserCreate(BaseModel):
+    email: str
+    password: str

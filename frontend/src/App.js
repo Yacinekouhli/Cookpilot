@@ -1,25 +1,53 @@
 import React, { useState, useEffect } from "react";
+import Login from "./Login";
+import Signup from "./Signup";
 
 function App() {
   const [ingredients, setIngredients] = useState("");
   const [style, setStyle] = useState("");
   const [recipe, setRecipe] = useState(null);
   const [recipes, setRecipes] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [showLogin, setShowLogin] = useState(true);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setRecipe(null);   // 🔁 nettoie les anciennes données
+    setRecipes([]);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    setRecipe(null);   // 🔁 nettoie la recette affichée
+    setRecipes([]);
+  };
 
   const fetchRecipes = async () => {
-    const res = await fetch("http://localhost:8000/recipes");
-    const data = await res.json();
-    setRecipes(data);
+    try {
+      const res = await fetch("http://localhost:8000/recipes", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await res.json();
+      setRecipes(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Erreur lors du chargement des recettes :", error);
+    }
   };
 
   useEffect(() => {
-    fetchRecipes();
-  }, []);
+    if (isLoggedIn) fetchRecipes();
+  }, [isLoggedIn]);
 
   const handleGenerate = async () => {
     const res = await fetch("http://localhost:8000/generate-recipe", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
       body: JSON.stringify({ ingredients, style }),
     });
 
@@ -31,23 +59,39 @@ function App() {
   const handleDelete = async (id) => {
     await fetch(`http://localhost:8000/recipes/${id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
     fetchRecipes();
   };
 
+  if (!isLoggedIn) {
+    return showLogin ? (
+      <Login onLogin={handleLogin} switchToSignup={() => setShowLogin(false)} />
+    ) : (
+      <Signup onSignup={() => setShowLogin(true)} switchToLogin={() => setShowLogin(true)} />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-light px-4 py-8">
-      <div className="flex items-center justify-center space-x-4 mb-8">
-  <img src="/logo.png" alt="logo" className="w-12 h-12" />
-  <h1 className="text-3xl font-bold text-dark">Cookpilot</h1>
-</div>
+      <div className="flex items-center justify-between mb-6 max-w-5xl mx-auto">
+        <div className="flex items-center space-x-4">
+          <img src="/logo.png" alt="logo" className="w-12 h-12" />
+          <h1 className="text-3xl font-bold text-dark">Cookpilot</h1>
+        </div>
+        <button onClick={handleLogout} className="bg-red-500 text-white px-3 py-1 rounded">
+          Se déconnecter
+        </button>
+      </div>
 
       <div className="max-w-xl mx-auto bg-white shadow-lg rounded-xl p-6 mb-8 space-y-4">
         <label className="block">
           <span className="text-gray-700 font-semibold">Ingrédients :</span>
           <input
             type="text"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
             placeholder="pâtes, tomates, ail..."
             value={ingredients}
             onChange={(e) => setIngredients(e.target.value)}
@@ -59,7 +103,7 @@ function App() {
           <select
             value={style}
             onChange={(e) => setStyle(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
           >
             <option value="">-- Choisir un style --</option>
             <option value="italienne">Italienne</option>
