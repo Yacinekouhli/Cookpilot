@@ -12,29 +12,27 @@ function App() {
 
   const handleLogin = () => {
     setIsLoggedIn(true);
-    setRecipe(null);   // 🔁 nettoie les anciennes données
-    setRecipes([]);
+    setIngredients("");  // Vide les champs à la connexion
+    setStyle("");
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    setRecipe(null);   // 🔁 nettoie la recette affichée
-    setRecipes([]);
+    setIngredients("");  // Vide les champs à la déconnexion
+    setStyle("");
+    setRecipe(null);     // Vide la recette affichée
+    setRecipes([]);      // Vide l'historique
   };
 
   const fetchRecipes = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/recipes", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const data = await res.json();
-      setRecipes(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Erreur lors du chargement des recettes :", error);
-    }
+    const res = await fetch("http://localhost:8000/recipes", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const data = await res.json();
+    setRecipes(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {
